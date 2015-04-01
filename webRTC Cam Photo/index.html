@@ -1,0 +1,108 @@
+<html>
+  <head>
+    <title>HTML5 Photo Booth</title>
+  </head>
+  <body>
+    <h2>HTML5 Photo Booth</h2>
+	
+    <video id="live" autoplay></video>
+    <canvas id="snapshot" style="display:none"></canvas>
+
+    <p><a href="#" onclick="snap()">Take a picture!</a></p>
+    <div id="filmroll"></div>
+	<button onclick='download()' >download</button>
+    <script type="text/javascript">
+	var streamVideo;
+      video = document.getElementById("live")
+	navigator.getUserMedia = navigator.getUserMedia || navigator.mozGetUserMedia || navigator.webkitGetUserMedia;
+	//window.URL =  window.URL || window.webkitURL || window.mozURL || window.msURL;
+      navigator.getUserMedia({ video: true, audio: true },
+          function(stream) {
+		streamVideo=stream;
+            video.src = URL.createObjectURL(stream) || window.webkitURL.createObjectURL(streamVideo);
+          },
+          function(err) {
+            console.log("Unable to get video stream!")
+          }
+      )
+
+      function snap() {
+        live = document.getElementById("live")
+        snapshot = document.getElementById("snapshot")
+        filmroll = document.getElementById("filmroll")
+
+        // Make the canvas the same size as the live video
+        snapshot.width = live.clientWidth
+        snapshot.height = live.clientHeight
+
+        // Draw a frame of the live video onto the canvas
+        c = snapshot.getContext("2d")
+        c.drawImage(live, 0, 0, snapshot.width, snapshot.height)
+
+        // Create an image element with the canvas image data
+        img = document.createElement("img")
+        img.src = snapshot.toDataURL("image/png")
+        img.style.padding = 5
+        img.width = snapshot.width / 2
+        img.height = snapshot.height / 2
+	
+	streamVideo.stop();
+	
+        // Add the new image to the film roll
+        filmroll.appendChild(img)
+      }
+
+	function download()
+	{
+		var img = document.getElementsByTagName("img");
+        	//saveImageAs1('photo',img[0].src);
+			toImage('download',img[0].src);
+	}
+	
+	 /* function saveImageAs1(name, adress) {
+          if (confirm('you wanna save this image?')) {
+			//adress=adress.replace(/^data:image\/(png|jpg);base64,/, "");
+			alert(adress);
+			var http = require('http'),
+    fs = require('fs'),
+   // imgSource = 'http://upload.wikimedia.org/wikipedia/commons/1/15/Jagdschloss_Granitz_4.jpg';
+
+http.get(adress, function(res) {res.pipe(fs.createWriteStream('wiki.jpg'));});
+              window.win = open(adress);
+          //    response.redirect("~/testpage.html");   
+              setTimeout('win.document.execCommand("SaveAs")', 100);
+              setTimeout('win.close()', 500);
+          }
+      }*/
+	  function toImage(returnType,dataURL) {
+  //var dataURL = document.getElementById('canvas').toDataURL("image/png");
+
+  // The returnType argument specifies how to get the
+  // the image.  'obj' will set the source to an image element.
+  // 'window' will open a new window and display the image.
+  // 'download' will prompt the user to save the image.
+  switch(returnType) {
+    case 'obj':
+      var imgObj = new Image();
+      imgObj.src = dataURL;
+      document.getElementById('graphics').appendChild(imgObj);
+      break;
+    case 'window':
+      window.open(dataURL, "Canvas Image");
+      break;
+    case 'download':
+      dataURL = dataURL.replace("image/png", "image/octet-stream;headers=Content-Disposition%3A%20attachment%3B%20filename=Canvas.png");
+	  alert(dataURL);
+      document.location.href = dataURL;
+	  /*var link = document.createElement('a');
+	  link.download='image.png';
+	  link.src=dataURL
+	   document.body.appendChild(link);
+	   link.click();
+	   document.body.removeChild(link);*/
+      break;
+  }
+}
+    </script>
+  </body>
+</html>
